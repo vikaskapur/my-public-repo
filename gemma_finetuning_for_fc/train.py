@@ -1,3 +1,4 @@
+# %% [code]
 from enum import Enum
 from functools import partial
 import pandas as pd
@@ -6,7 +7,7 @@ import json
 import os
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
-from datasets import load_dataset
+from datasets import load_dataset, DatasetDict
 from trl import SFTConfig, SFTTrainer
 from peft import LoraConfig, TaskType
 
@@ -57,7 +58,7 @@ class FineTuneForFunctionCalling:
         dataset = self._prepare_dataset()
 
         # Print sample dataset
-        self._print_dataset_example()
+        self._print_dataset_example(dataset)
 
         # Modify the tokenizer
         self._modify_tokenizer()
@@ -99,7 +100,9 @@ class FineTuneForFunctionCalling:
         """Prepare the dataset for training"""
         if self.is_dev_run:
             split = "train[0:10]"  # reduce the working size to speed up iteration
-            dataset["train"] = load_dataset(self.dataset_name, split=split)
+            dataset = DatasetDict(
+                {"train": load_dataset(self.dataset_name, split=split)}
+            )
         else:
             dataset = load_dataset(self.dataset_name)
         dataset = dataset.rename_column("conversations", "messages")
@@ -127,7 +130,7 @@ class FineTuneForFunctionCalling:
 
         return {"text": self.tokenizer.apply_chat_template(messages, tokenize=False)}
 
-    def _print_dataset_example(self):
+    def _print_dataset_example(self, dataset):
         """Print the dataset example"""
         # Let's look at how we formatted the dataset
 
@@ -138,7 +141,7 @@ class FineTuneForFunctionCalling:
 
         # 3. If the model contains a `<tools_call>`, we will append the result of this action in a new **"Tool"** message containing a `<tool_response></tool_response>` with the answer from the tool.
 
-        print(self.dataset["train"][7]["text"])
+        print(dataset["train"][7]["text"])
 
     def _modify_tokenizer(self):
         """Modify the tokenizer"""
