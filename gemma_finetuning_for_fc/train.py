@@ -14,10 +14,6 @@ from peft import LoraConfig, TaskType
 seed = 42
 set_seed(seed)
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 
 class FineTuneForFunctionCalling:
 
@@ -39,7 +35,12 @@ class FineTuneForFunctionCalling:
             user_secrets = UserSecretsClient()
             self.hf_model_id = user_secrets.get_secret("HF_MODEL_ID")
             self.hf_username = user_secrets.get_secret("HF_USERNAME")
+            os.environ["HF_TOKEN"] = user_secrets.get_secret("HF_TOKEN")
         else:
+            from dotenv import load_dotenv
+
+            load_dotenv()
+
             self.hf_username = os.environ.get("HF_USERNAME")
             self.hf_model_id = os.environ.get("HF_MODEL_ID")
 
