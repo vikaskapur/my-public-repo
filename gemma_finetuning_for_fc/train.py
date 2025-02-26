@@ -98,6 +98,8 @@ class FineTuneForFunctionCalling:
 
     def _prepare_dataset(self):
         """Prepare the dataset for training"""
+        print("+++++++ _prepare_dataset() ++++++++++++")
+        
         if self.is_dev_run:
             split = "train[0:10]"  # reduce the working size to speed up iteration
             dataset = DatasetDict(
@@ -109,10 +111,16 @@ class FineTuneForFunctionCalling:
         dataset = dataset.map(self._preprocess, remove_columns="messages")
         dataset = dataset["train"].train_test_split(0.1)
         print(f"Dataset stats: \n{dataset}")
+
+        print("------- _prepare_dataset() ------------")
+        
         return dataset
 
     # pre-process list of messages, to a prompt that the model can understand.
     def _preprocess(self, sample):
+
+        print("+++++++ _preprocess() ++++++++++++")
+        
         messages = sample["messages"]
         first_message = messages[0]
 
@@ -128,10 +136,15 @@ class FineTuneForFunctionCalling:
             # Remove the system message from the conversation
             messages.pop(0)
 
+        print("------- _preprocess() ------------")
+        
         return {"text": self.tokenizer.apply_chat_template(messages, tokenize=False)}
 
     def _print_dataset_example(self, dataset):
         """Print the dataset example"""
+
+        print("+++++++ _print_dataset_example() ++++++++++++")
+
         # Let's look at how we formatted the dataset
 
         # In this example we have :
@@ -142,6 +155,8 @@ class FineTuneForFunctionCalling:
         # 3. If the model contains a `<tools_call>`, we will append the result of this action in a new **"Tool"** message containing a `<tool_response></tool_response>` with the answer from the tool.
 
         print(dataset["train"][7]["text"])
+        print("------- _print_dataset_example() ------------")
+
 
     def _modify_tokenizer(self):
         """Modify the tokenizer"""
@@ -150,6 +165,8 @@ class FineTuneForFunctionCalling:
 
         # Additionally, since we changed the `chat_template` in our **preprocess** function to format conversations as messages within a prompt, we also need to modify the `chat_template` in the tokenizer to reflect these changes.
 
+        print("+++++++ _modify_tokenizer() ++++++++++++")
+        
         # Add the new special tokens
         class ChatmlSpecialTokens(str, Enum):
             tools = "<tools>"
@@ -176,8 +193,14 @@ class FineTuneForFunctionCalling:
         )
         self.tokenizer.chat_template = simplified_chat_template
 
+        print("------- _modify_tokenizer() ------------")
+
+
     def _load_model(self):
         """Load the model"""
+        
+        print("+++++++ _load_model() ++++++++++++")
+        
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             attn_implementation="eager",  # recommended for gemma models
@@ -186,8 +209,14 @@ class FineTuneForFunctionCalling:
         self.model.resize_token_embeddings(len(self.tokenizer))
         self.model.to(torch.bfloat16)
 
+        print("------- _load_model() ------------")
+
+
     def _configure_lora(self):
         """Configure the LoRA"""
+        
+        print("+++++++ _configure_lora() ++++++++++++")
+        
         # Configure LoRA parameters
 
         # r: rank dimension for LoRA update matrices (smaller = more compression)
@@ -216,18 +245,22 @@ class FineTuneForFunctionCalling:
             task_type=TaskType.CAUSAL_LM,
         )
 
+        print("------- _configure_lora() ------------")
+
         return peft_config
 
     def _set_training_arguments(self):
         """Set the training arguments"""
-
+        
+        print("+++++++ _set_training_arguments() ++++++++++++")
+        
         output_dir = (
             self.hf_model_id
         )  # The directory where the trained model checkpoints, logs, and other artifacts will be saved. It will also be the default name of the model when pushed to the hub if not redefined later.
         per_device_train_batch_size = 1  # batch size per GPU
         per_device_eval_batch_size = 1  # batch size per GPU/
-        gradient_accumulation_steps = 1  # 4, Number of updates steps to accumulate the gradients for, before performing a backward/update pass.
-        logging_steps = 1  # 5, Number of update steps between two logs.
+        gradient_accumulation_steps = 4  # Number of updates steps to accumulate the gradients for, before performing a backward/update pass.
+        logging_steps = 5  # Number of update steps between two logs.
         learning_rate = 1e-4  # The initial learning rate for the optimizer.
 
         max_grad_norm = 1.0  # Maximum gradient norm (for gradient clipping) default = 1
@@ -263,10 +296,14 @@ class FineTuneForFunctionCalling:
             max_seq_length=max_seq_length,
         )
 
+        print("------- _set_training_arguments() ------------")
+
         return training_arguments
 
     def _train_model(self, dataset, peft_config, training_arguments):
         """Train the model"""
+
+        print("+++++++ _train_model() ++++++++++++")
 
         # As Trainer, we use the `SFTTrainer` which is a Supervised Fine-Tuning Trainer.
         trainer = SFTTrainer(
@@ -276,16 +313,22 @@ class FineTuneForFunctionCalling:
             eval_dataset=dataset["test"],
             processing_class=self.tokenizer,
             peft_config=peft_config,
+            disable_tqdm=True,
         )
 
         # Here, we launch the training 🔥. Perfect time for you to pause and grab a coffee ☕."""
         trainer.train()
         trainer.save_model()  # Will save the model, so you can reload it using from_pretrained()
+
+        print("------- _train_model() ------------")
+
         return trainer
 
     def _save_model_to_hub(self, trainer):
         """Push the Model and the Tokenizer to the Hub"""
-
+        
+        print("+++++++ _save_model_to_hub() ++++++++++++")
+        
         username = self.hf_username
         output_dir = self.hf_model_id
 
@@ -294,6 +337,9 @@ class FineTuneForFunctionCalling:
         # self.tokenizer.eos_token = "<eos>"
         # push the tokenizer to hub ( replace with your username and your previously specified
         self.tokenizer.push_to_hub(f"{username}/{output_dir}", token=True)
+
+        print("------- _save_model_to_hub() ------------")
+
 
 
 if __name__ == "__main__":
