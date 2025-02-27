@@ -2,7 +2,6 @@ import os
 
 from peft import PeftModel, PeftConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from datasets import load_dataset
 import torch
 
 
