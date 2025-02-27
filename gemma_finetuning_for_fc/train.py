@@ -101,7 +101,7 @@ class FineTuneForFunctionCalling:
     def _prepare_dataset(self):
         """Prepare the dataset for training"""
         print("+++++++ _prepare_dataset() ++++++++++++")
-        
+
         if self.is_dev_run:
             split = "train[0:10]"  # reduce the working size to speed up iteration
             dataset = DatasetDict(
@@ -115,7 +115,7 @@ class FineTuneForFunctionCalling:
         print(f"Dataset stats: \n{dataset}")
 
         print("------- _prepare_dataset() ------------")
-        
+
         return dataset
 
     # pre-process list of messages, to a prompt that the model can understand.
@@ -155,7 +155,6 @@ class FineTuneForFunctionCalling:
         print(dataset["train"][7]["text"])
         print("------- _print_dataset_example() ------------")
 
-
     def _modify_tokenizer(self):
         """Modify the tokenizer"""
         # The tokenizer splits text into sub-words by default. This is **not** what we want for our new special tokens!
@@ -164,7 +163,7 @@ class FineTuneForFunctionCalling:
         # Additionally, since we changed the `chat_template` in our **preprocess** function to format conversations as messages within a prompt, we also need to modify the `chat_template` in the tokenizer to reflect these changes.
 
         print("+++++++ _modify_tokenizer() ++++++++++++")
-        
+
         # Add the new special tokens
         class ChatmlSpecialTokens(str, Enum):
             tools = "<tools>"
@@ -193,12 +192,11 @@ class FineTuneForFunctionCalling:
 
         print("------- _modify_tokenizer() ------------")
 
-
     def _load_model(self):
         """Load the model"""
-        
+
         print("+++++++ _load_model() ++++++++++++")
-        
+
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             attn_implementation="eager",  # recommended for gemma models
@@ -209,12 +207,11 @@ class FineTuneForFunctionCalling:
 
         print("------- _load_model() ------------")
 
-
     def _configure_lora(self):
         """Configure the LoRA"""
-        
+
         print("+++++++ _configure_lora() ++++++++++++")
-        
+
         # Configure LoRA parameters
 
         # r: rank dimension for LoRA update matrices (smaller = more compression)
@@ -249,9 +246,9 @@ class FineTuneForFunctionCalling:
 
     def _set_training_arguments(self):
         """Set the training arguments"""
-        
+
         print("+++++++ _set_training_arguments() ++++++++++++")
-        
+
         output_dir = (
             self.hf_model_id
         )  # The directory where the trained model checkpoints, logs, and other artifacts will be saved. It will also be the default name of the model when pushed to the hub if not redefined later.
@@ -324,9 +321,9 @@ class FineTuneForFunctionCalling:
 
     def _save_model_to_hub(self, trainer):
         """Push the Model and the Tokenizer to the Hub"""
-        
+
         print("+++++++ _save_model_to_hub() ++++++++++++")
-        
+
         username = self.hf_username
         output_dir = self.hf_model_id
 
@@ -337,7 +334,6 @@ class FineTuneForFunctionCalling:
         self.tokenizer.push_to_hub(f"{username}/{output_dir}", token=True)
 
         print("------- _save_model_to_hub() ------------")
-
 
 
 if __name__ == "__main__":
