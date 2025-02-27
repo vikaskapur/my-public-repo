@@ -294,6 +294,7 @@ class FineTuneForFunctionCalling:
             # enabling packing, results change in number of steps
             packing=False,  # multiple short examples are packed in the same input sequence to increase training efficiency.
             max_seq_length=max_seq_length,
+            disable_tqdm=True,
         )
 
         print("------- _set_training_arguments() ------------")
@@ -313,7 +314,6 @@ class FineTuneForFunctionCalling:
             eval_dataset=dataset["test"],
             processing_class=self.tokenizer,
             peft_config=peft_config,
-            disable_tqdm=True,
         )
 
         # Here, we launch the training 🔥. Perfect time for you to pause and grab a coffee ☕."""
