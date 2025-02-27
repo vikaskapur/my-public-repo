@@ -1,4 +1,6 @@
 # %% [code]
+# %% [code]
+
 from enum import Enum
 from functools import partial
 import pandas as pd
@@ -119,8 +121,6 @@ class FineTuneForFunctionCalling:
     # pre-process list of messages, to a prompt that the model can understand.
     def _preprocess(self, sample):
 
-        print("+++++++ _preprocess() ++++++++++++")
-        
         messages = sample["messages"]
         first_message = messages[0]
 
@@ -136,8 +136,6 @@ class FineTuneForFunctionCalling:
             # Remove the system message from the conversation
             messages.pop(0)
 
-        print("------- _preprocess() ------------")
-        
         return {"text": self.tokenizer.apply_chat_template(messages, tokenize=False)}
 
     def _print_dataset_example(self, dataset):
@@ -345,5 +343,5 @@ class FineTuneForFunctionCalling:
 if __name__ == "__main__":
     """Run the fine-tuning for function calling"""
 
-    fine_tune = FineTuneForFunctionCalling(is_dev_run=True, is_kaggle_run=True)
+    fine_tune = FineTuneForFunctionCalling(is_dev_run=False, is_kaggle_run=True)
     fine_tune.fine_tune()
