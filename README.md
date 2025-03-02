@@ -17,7 +17,6 @@ An experimental playground for exploring and documenting recent advances in Larg
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Code Quality](#code-quality)
-- [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
 
@@ -54,13 +53,13 @@ The goal is to both document my learning journey and provide a resource for othe
 
 2. **Create an environment and install dependencies:**
 
- Mac/Linux/WSL
+ - Mac/Linux/WSL
 ```
 $ python3 -m venv exp-env
 $ source exp-env/bin/activate
 $ pip install -r requirements.txt
 ```
-Windows Powershell
+- Windows Powershell
 ```
 PS> python3 -m venv exp-env
 PS> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
@@ -85,13 +84,15 @@ You can also find detailed instructions in the README for each experiment.
 
 ## Project Structure
 
+```
 my-public-repo/
-├── experiment/         # Experiment scripts and notebooks
+|
+|── experiment/         # Experiment scripts and notebooks
 │   ├── experiment_llm.py
 │   └── requirements.txt
 ├── LICENSE              # License file
 └── README.md            # This file
-
+```
 
 ---
 
