@@ -1,0 +1,577 @@
+45.2s	105	+++++++ Model Original Chat Template ++++++++++++
+45.2s	106	{{ bos_token }}{% if messages[0]['role'] == 'system' %}{{ raise_exception('System role not supported') }}{% endif %}{% for message in messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if (message['role'] == 'assistant') %}{% set role = 'model' %}{% else %}{% set role = message['role'] %}{% endif %}{{ '<start_of_turn>' + role + '
+45.2s	107	' + message['content'] | trim + '<end_of_turn>
+45.2s	108	' }}{% endfor %}{% if add_generation_prompt %}{{'<start_of_turn>model
+45.2s	109	'}}{% endif %}
+45.2s	110	------- Model Original Chat Template ------------
+45.2s	111	+++++++ Model New Chat Template ++++++++++++
+45.2s	112	{{ bos_token }}{% if messages[0]['role'] == 'system' %}{{ raise_exception('System role not supported') }}{% endif %}{% for message in messages %}{{ '<start_of_turn>' + message['role'] + '
+45.2s	113	' + message['content'] | trim + '<end_of_turn><eos>
+45.2s	114	' }}{% endfor %}{% if add_generation_prompt %}{{'<start_of_turn>model
+45.2s	115	'}}{% endif %}
+45.2s	116	------- Model New Chat Template ------------
+45.2s	117	+++++++ _prepare_dataset() ++++++++++++
+50.2s	118	
+Generating train split:   0%|          | 0/3570 [00:00<?, ? examples/s]
+Generating train split: 100%|██████████| 3570/3570 [00:00<00:00, 36151.07 examples/s]
+51.3s	119	
+Map:   0%|          | 0/3570 [00:00<?, ? examples/s]
+Map:  17%|█▋        | 614/3570 [00:00<00:00, 6076.09 examples/s]
+Map:  41%|████      | 1460/3570 [00:00<00:00, 5768.96 examples/s]
+Map:  58%|█████▊    | 2088/3570 [00:00<00:00, 5964.47 examples/s]
+Map:  78%|███████▊  | 2791/3570 [00:00<00:00, 6346.23 examples/s]
+Map: 100%|██████████| 3570/3570 [00:00<00:00, 6077.11 examples/s]
+Map: 100%|██████████| 3570/3570 [00:00<00:00, 6037.68 examples/s]
+51.3s	120	Dataset stats: 
+51.3s	121	DatasetDict({
+51.3s	122	    train: Dataset({
+51.3s	123	        features: ['text'],
+51.3s	124	        num_rows: 3213
+51.3s	125	    })
+51.3s	126	    test: Dataset({
+51.3s	127	        features: ['text'],
+51.3s	128	        num_rows: 357
+51.3s	129	    })
+51.3s	130	})
+51.3s	131	------- _prepare_dataset() ------------
+51.3s	132	+++++++ _print_dataset_example() ++++++++++++
+51.3s	133	<bos><start_of_turn>human
+51.3s	134	You are a function calling AI model. You are provided with function signatures within <tools></tools> XML tags.You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions.Here are the available tools:<tools> [{'type': 'function', 'function': {'name': 'calculate_loan_payment', 'description': 'Calculate the monthly loan payment', 'parameters': {'type': 'object', 'properties': {'principal': {'type': 'number', 'description': 'The principal amount of the loan'}, 'interest_rate': {'type': 'number', 'description': 'The annual interest rate of the loan'}, 'loan_term': {'type': 'integer', 'description': 'The term of the loan in months'}}, 'required': ['principal', 'interest_rate', 'loan_term']}}}, {'type': 'function', 'function': {'name': 'calculate_bmi', 'description': 'Calculate the Body Mass Index (BMI)', 'parameters': {'type': 'object', 'properties': {'weight': {'type': 'number', 'description': 'The weight in kilograms'}, 'height': {'type': 'number', 'description': 'The height in meters'}}, 'required': ['weight', 'height']}}}] </tools>Use the following pydantic model json schema for each tool call you will make: {'title': 'FunctionCall', 'type': 'object', 'properties': {'arguments': {'title': 'Arguments', 'type': 'object'}, 'name': {'title': 'Name', 'type': 'string'}}, 'required': ['arguments', 'name']}For each function call return a json object with function name and arguments within <tool_call></tool_call> XML tags as follows:
+51.3s	135	<tool_call>
+51.3s	136	{tool_call}
+51.3s	137	</tool_call>Also, before making a call to a function take the time to plan the function to take. Make that thinking process between <think>{your thoughts}</think>
+51.3s	138	
+51.3s	139	Hi, I need some help with my loan calculations.<end_of_turn><eos>
+51.3s	140	<start_of_turn>model
+51.3s	141	Of course, I'd be happy to help. Could you please provide me with the principal amount of the loan, the annual interest rate, and the term of the loan in months?<end_of_turn><eos>
+51.3s	142	<start_of_turn>human
+51.3s	143	Sure, the principal amount is $20000, the annual interest rate is 5%, and the loan term is 60 months.<end_of_turn><eos>
+51.3s	144	<start_of_turn>model
+51.3s	145	<think>Okay, let me try to figure out how to respond to the user's request. They mentioned needing help with loan calculations, so I remember that I have two tools available: calculate_loan_payment and calculate_bmi. Since the user is talking about a loan, calculate_bmi isn't relevant here.
+51.3s	146	
+51.3s	147	The user provided specific numbers: $20,000 principal, 5% annual interest rate, and a 60-month term. I need to extract these values correctly. The function calculate_loan_payment requires principal, interest_rate, and loan_term as parameters. I should make sure to pass each value accurately. 
+51.3s	148	
+51.3s	149	Wait, does the interest rate need to be in a specific format? It's given as 5%, which I think the function can handle as a number. So I'll just pass it as 5. The loan term is in months, which matches the function's requirement of an integer. The principal is straightforward as it's a number.
+51.3s	150	
+51.3s	151	I don't see any missing or extra information, so it looks like all required parameters are provided. I'll structure the JSON accordingly, making sure the names match the function's expected parameters. That should do it.
+51.3s	152	</think><tool_call>
+51.3s	153	{'name': 'calculate_loan_payment', 'arguments': {'principal': 20000, 'interest_rate': 5, 'loan_term': 60}}
+51.3s	154	</tool_call><end_of_turn><eos>
+51.3s	155	<start_of_turn>tool
+51.3s	156	<tool_response>
+51.3s	157	{'monthly_payment': 377.42}
+51.3s	158	</tool_response><end_of_turn><eos>
+51.3s	159	<start_of_turn>model
+51.3s	160	Based on the information you provided, your monthly loan payment would be approximately $377.42.<end_of_turn><eos>
+51.3s	161	
+51.3s	162	------- _print_dataset_example() ------------
+51.3s	163	+++++++ _modify_tokenizer() ++++++++++++
+52.8s	164	------- _modify_tokenizer() ------------
+52.8s	165	+++++++ _load_model() ++++++++++++
+179.0s	166	
+Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]
+Downloading shards:  50%|█████     | 1/2 [01:58<01:58, 118.65s/it]
+Downloading shards: 100%|██████████| 2/2 [02:04<00:00, 52.33s/it] 
+Downloading shards: 100%|██████████| 2/2 [02:04<00:00, 62.28s/it]
+187.6s	167	
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
+Loading checkpoint shards:  50%|█████     | 1/2 [00:07<00:07,  7.51s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:08<00:00,  3.50s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:08<00:00,  4.10s/it]
+188.1s	168	The new embeddings will be initialized from a multivariate normal distribution that has old embeddings' mean and covariance. As described in this article: https://nlp.stanford.edu/~johnhew/vocab-expansion.html. To disable this, use `mean_resizing=False`
+191.1s	169	------- _load_model() ------------
+191.1s	170	+++++++ _configure_lora() ++++++++++++
+191.1s	171	------- _configure_lora() ------------
+191.1s	172	+++++++ _set_training_arguments() ++++++++++++
+191.2s	173	------- _set_training_arguments() ------------
+191.2s	174	+++++++ _train_model() ++++++++++++
+191.7s	175	/usr/local/lib/python3.10/dist-packages/peft/tuners/tuners_utils.py:543: UserWarning: Model with `tie_word_embeddings=True` and the tied_target_modules=['lm_head'] are part of the adapter. This can lead to complications, for example when merging the adapter or converting your model to formats other than safetensors. See for example https://github.com/huggingface/peft/issues/2018.
+191.7s	176	  warnings.warn(
+191.9s	177	
+Converting train dataset to ChatML:   0%|          | 0/3213 [00:00<?, ? examples/s]
+Converting train dataset to ChatML:  52%|█████▏    | 1680/3213 [00:00<00:00, 16651.77 examples/s]
+Converting train dataset to ChatML: 100%|██████████| 3213/3213 [00:00<00:00, 13841.22 examples/s]
+192.5s	178	
+Applying chat template to train dataset:   0%|          | 0/3213 [00:00<?, ? examples/s]
+Applying chat template to train dataset: 100%|██████████| 3213/3213 [00:00<00:00, 36420.17 examples/s]
+201.0s	179	
+Tokenizing train dataset:   0%|          | 0/3213 [00:00<?, ? examples/s]
+Tokenizing train dataset:   1%|▏         | 46/3213 [00:00<00:07, 448.24 examples/s]
+Tokenizing train dataset:   3%|▎         | 98/3213 [00:00<00:06, 484.31 examples/s]
+Tokenizing train dataset:   5%|▍         | 147/3213 [00:00<00:06, 479.75 examples/s]
+Tokenizing train dataset:   7%|▋         | 218/3213 [00:00<00:06, 467.44 examples/s]
+Tokenizing train dataset:   9%|▉         | 289/3213 [00:00<00:06, 464.88 examples/s]
+Tokenizing train dataset:  10%|█         | 337/3213 [00:00<00:06, 464.30 examples/s]
+Tokenizing train dataset:  12%|█▏        | 385/3213 [00:00<00:06, 465.83 examples/s]
+Tokenizing train dataset:  14%|█▎        | 434/3213 [00:00<00:05, 467.08 examples/s]
+Tokenizing train dataset:  15%|█▌        | 486/3213 [00:01<00:05, 476.51 examples/s]
+Tokenizing train dataset:  17%|█▋        | 536/3213 [00:01<00:05, 480.56 examples/s]
+Tokenizing train dataset:  19%|█▉        | 608/3213 [00:01<00:05, 476.09 examples/s]
+Tokenizing train dataset:  21%|██        | 677/3213 [00:01<00:05, 467.46 examples/s]
+Tokenizing train dataset:  23%|██▎       | 727/3213 [00:01<00:05, 472.92 examples/s]
+Tokenizing train dataset:  25%|██▍       | 798/3213 [00:01<00:05, 470.78 examples/s]
+Tokenizing train dataset:  26%|██▋       | 850/3213 [00:01<00:04, 479.76 examples/s]
+Tokenizing train dataset:  29%|██▊       | 923/3213 [00:01<00:04, 478.57 examples/s]
+Tokenizing train dataset:  30%|███       | 973/3213 [00:02<00:04, 481.41 examples/s]
+Tokenizing train dataset:  32%|███▏      | 1044/3213 [00:02<00:07, 283.11 examples/s]
+Tokenizing train dataset:  34%|███▍      | 1091/3213 [00:02<00:06, 312.32 examples/s]
+Tokenizing train dataset:  35%|███▌      | 1138/3213 [00:02<00:06, 341.63 examples/s]
+Tokenizing train dataset:  37%|███▋      | 1184/3213 [00:02<00:05, 365.77 examples/s]
+Tokenizing train dataset:  38%|███▊      | 1230/3213 [00:02<00:05, 385.18 examples/s]
+Tokenizing train dataset:  40%|████      | 1296/3213 [00:03<00:04, 401.73 examples/s]
+Tokenizing train dataset:  42%|████▏     | 1342/3213 [00:03<00:04, 414.20 examples/s]
+Tokenizing train dataset:  43%|████▎     | 1389/3213 [00:03<00:04, 423.52 examples/s]
+Tokenizing train dataset:  45%|████▍     | 1437/3213 [00:03<00:04, 433.78 examples/s]
+Tokenizing train dataset:  46%|████▌     | 1482/3213 [00:03<00:03, 435.62 examples/s]
+Tokenizing train dataset:  48%|████▊     | 1530/3213 [00:03<00:03, 446.63 examples/s]
+Tokenizing train dataset:  49%|████▉     | 1582/3213 [00:03<00:03, 463.24 examples/s]
+Tokenizing train dataset:  51%|█████     | 1630/3213 [00:03<00:03, 463.32 examples/s]
+Tokenizing train dataset:  52%|█████▏    | 1682/3213 [00:03<00:03, 476.47 examples/s]
+Tokenizing train dataset:  54%|█████▍    | 1751/3213 [00:04<00:03, 463.31 examples/s]
+Tokenizing train dataset:  56%|█████▌    | 1800/3213 [00:04<00:03, 466.92 examples/s]
+Tokenizing train dataset:  58%|█████▊    | 1869/3213 [00:04<00:02, 461.70 examples/s]
+Tokenizing train dataset:  60%|█████▉    | 1919/3213 [00:04<00:02, 467.64 examples/s]
+Tokenizing train dataset:  62%|██████▏   | 1988/3213 [00:04<00:02, 462.56 examples/s]
+Tokenizing train dataset:  64%|██████▎   | 2043/3213 [00:04<00:04, 261.90 examples/s]
+Tokenizing train dataset:  65%|██████▍   | 2081/3213 [00:05<00:04, 280.24 examples/s]
+Tokenizing train dataset:  66%|██████▌   | 2125/3213 [00:05<00:03, 307.87 examples/s]
+Tokenizing train dataset:  68%|██████▊   | 2182/3213 [00:05<00:03, 327.17 examples/s]
+Tokenizing train dataset:  69%|██████▉   | 2227/3213 [00:05<00:02, 351.81 examples/s]
+Tokenizing train dataset:  71%|███████   | 2272/3213 [00:05<00:02, 368.55 examples/s]
+Tokenizing train dataset:  72%|███████▏  | 2314/3213 [00:05<00:02, 377.60 examples/s]
+Tokenizing train dataset:  73%|███████▎  | 2360/3213 [00:05<00:02, 397.24 examples/s]
+Tokenizing train dataset:  75%|███████▍  | 2402/3213 [00:05<00:02, 401.08 examples/s]
+Tokenizing train dataset:  76%|███████▌  | 2449/3213 [00:05<00:01, 416.49 examples/s]
+Tokenizing train dataset:  78%|███████▊  | 2514/3213 [00:06<00:01, 417.94 examples/s]
+Tokenizing train dataset:  80%|███████▉  | 2561/3213 [00:06<00:01, 428.94 examples/s]
+Tokenizing train dataset:  81%|████████  | 2606/3213 [00:06<00:01, 433.48 examples/s]
+Tokenizing train dataset:  83%|████████▎ | 2652/3213 [00:06<00:01, 437.38 examples/s]
+Tokenizing train dataset:  84%|████████▍ | 2701/3213 [00:06<00:01, 444.87 examples/s]
+Tokenizing train dataset:  86%|████████▌ | 2748/3213 [00:06<00:01, 448.23 examples/s]
+Tokenizing train dataset:  87%|████████▋ | 2794/3213 [00:06<00:00, 450.47 examples/s]
+Tokenizing train dataset:  88%|████████▊ | 2843/3213 [00:06<00:00, 456.89 examples/s]
+Tokenizing train dataset:  90%|█████████ | 2892/3213 [00:06<00:00, 465.76 examples/s]
+Tokenizing train dataset:  91%|█████████▏| 2939/3213 [00:07<00:00, 461.79 examples/s]
+Tokenizing train dataset:  93%|█████████▎| 2987/3213 [00:07<00:00, 463.48 examples/s]
+Tokenizing train dataset:  95%|█████████▍| 3044/3213 [00:07<00:00, 258.66 examples/s]
+Tokenizing train dataset:  96%|█████████▌| 3086/3213 [00:07<00:00, 286.32 examples/s]
+Tokenizing train dataset:  97%|█████████▋| 3127/3213 [00:07<00:00, 310.40 examples/s]
+Tokenizing train dataset:  99%|█████████▊| 3171/3213 [00:07<00:00, 337.85 examples/s]
+Tokenizing train dataset: 100%|██████████| 3213/3213 [00:08<00:00, 295.96 examples/s]
+Tokenizing train dataset: 100%|██████████| 3213/3213 [00:08<00:00, 398.68 examples/s]
+204.7s	180	
+Truncating train dataset:   0%|          | 0/3213 [00:00<?, ? examples/s]
+Truncating train dataset:   4%|▍         | 129/3213 [00:00<00:02, 1274.68 examples/s]
+Truncating train dataset:  10%|▉         | 312/3213 [00:00<00:02, 1230.76 examples/s]
+Truncating train dataset:  15%|█▌        | 496/3213 [00:00<00:02, 1220.00 examples/s]
+Truncating train dataset:  19%|█▉        | 622/3213 [00:00<00:02, 1231.96 examples/s]
+Truncating train dataset:  25%|██▌       | 804/3213 [00:00<00:01, 1222.66 examples/s]
+Truncating train dataset:  29%|██▉       | 929/3213 [00:00<00:01, 1226.47 examples/s]
+Truncating train dataset:  33%|███▎      | 1060/3213 [00:01<00:03, 648.18 examples/s]
+Truncating train dataset:  37%|███▋      | 1190/3213 [00:01<00:02, 760.43 examples/s]
+Truncating train dataset:  41%|████      | 1310/3213 [00:01<00:02, 846.26 examples/s]
+Truncating train dataset:  45%|████▍     | 1431/3213 [00:01<00:01, 925.39 examples/s]
+Truncating train dataset:  48%|████▊     | 1556/3213 [00:01<00:01, 1001.22 examples/s]
+Truncating train dataset:  52%|█████▏    | 1683/3213 [00:01<00:01, 1066.70 examples/s]
+Truncating train dataset:  56%|█████▌    | 1805/3213 [00:01<00:01, 1106.46 examples/s]
+Truncating train dataset:  60%|██████    | 1928/3213 [00:01<00:01, 1137.02 examples/s]
+Truncating train dataset:  64%|██████▍   | 2055/3213 [00:02<00:01, 646.59 examples/s] 
+Truncating train dataset:  68%|██████▊   | 2177/3213 [00:02<00:01, 749.24 examples/s]
+Truncating train dataset:  72%|███████▏  | 2299/3213 [00:02<00:01, 844.21 examples/s]
+Truncating train dataset:  75%|███████▌  | 2425/3213 [00:02<00:00, 936.04 examples/s]
+Truncating train dataset:  79%|███████▉  | 2550/3213 [00:02<00:00, 1009.81 examples/s]
+Truncating train dataset:  83%|████████▎ | 2672/3213 [00:02<00:00, 1062.28 examples/s]
+Truncating train dataset:  87%|████████▋ | 2794/3213 [00:02<00:00, 1101.08 examples/s]
+Truncating train dataset:  92%|█████████▏| 2967/3213 [00:03<00:00, 1115.61 examples/s]
+Truncating train dataset:  97%|█████████▋| 3124/3213 [00:03<00:00, 619.10 examples/s] 
+Truncating train dataset: 100%|██████████| 3213/3213 [00:03<00:00, 872.07 examples/s]
+204.7s	181	
+Converting eval dataset to ChatML:   0%|          | 0/357 [00:00<?, ? examples/s]
+Converting eval dataset to ChatML: 100%|██████████| 357/357 [00:00<00:00, 14000.88 examples/s]
+205.1s	182	
+Applying chat template to eval dataset:   0%|          | 0/357 [00:00<?, ? examples/s]
+Applying chat template to eval dataset: 100%|██████████| 357/357 [00:00<00:00, 24336.34 examples/s]
+206.5s	183	
+Tokenizing eval dataset:   0%|          | 0/357 [00:00<?, ? examples/s]
+Tokenizing eval dataset:  12%|█▏        | 42/357 [00:00<00:00, 406.08 examples/s]
+Tokenizing eval dataset:  25%|██▍       | 89/357 [00:00<00:00, 440.85 examples/s]
+Tokenizing eval dataset:  44%|████▍     | 157/357 [00:00<00:00, 441.79 examples/s]
+Tokenizing eval dataset:  57%|█████▋    | 202/357 [00:00<00:00, 442.63 examples/s]
+Tokenizing eval dataset:  69%|██████▉   | 248/357 [00:00<00:00, 443.58 examples/s]
+Tokenizing eval dataset:  82%|████████▏ | 293/357 [00:00<00:00, 444.00 examples/s]
+Tokenizing eval dataset: 100%|██████████| 357/357 [00:00<00:00, 341.33 examples/s]
+Tokenizing eval dataset: 100%|██████████| 357/357 [00:00<00:00, 387.25 examples/s]
+206.8s	184	
+Truncating eval dataset:   0%|          | 0/357 [00:00<?, ? examples/s]
+Truncating eval dataset:  35%|███▍      | 124/357 [00:00<00:00, 1225.13 examples/s]
+Truncating eval dataset:  69%|██████▉   | 248/357 [00:00<00:00, 1230.90 examples/s]
+Truncating eval dataset: 100%|██████████| 357/357 [00:00<00:00, 909.07 examples/s] 
+207.7s	185	`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+286.4s	186	{'loss': 9.0914, 'grad_norm': 179.72830200195312, 'learning_rate': 6.172839506172839e-06, 'mean_token_accuracy': 0.6410015821456909, 'epoch': 0.006224712107065048}
+363.0s	187	{'loss': 8.5721, 'grad_norm': 115.26905822753906, 'learning_rate': 1.2345679012345678e-05, 'mean_token_accuracy': 0.6517979115247726, 'epoch': 0.012449424214130096}
+438.2s	188	{'loss': 7.6321, 'grad_norm': 81.54690551757812, 'learning_rate': 1.8518518518518518e-05, 'mean_token_accuracy': 0.6533476352691651, 'epoch': 0.018674136321195144}
+511.9s	189	{'loss': 6.3552, 'grad_norm': 57.643558502197266, 'learning_rate': 2.4691358024691357e-05, 'mean_token_accuracy': 0.6969059616327286, 'epoch': 0.024898848428260192}
+589.4s	190	{'loss': 5.2519, 'grad_norm': 47.41447448730469, 'learning_rate': 3.08641975308642e-05, 'mean_token_accuracy': 0.7386001288890839, 'epoch': 0.03112356053532524}
+657.5s	191	{'loss': 4.4179, 'grad_norm': 39.121360778808594, 'learning_rate': 3.7037037037037037e-05, 'mean_token_accuracy': 0.777897173166275, 'epoch': 0.03734827264239029}
+732.9s	192	{'loss': 3.4416, 'grad_norm': 30.338403701782227, 'learning_rate': 4.3209876543209875e-05, 'mean_token_accuracy': 0.8284795910120011, 'epoch': 0.04357298474945534}
+809.7s	193	{'loss': 3.269, 'grad_norm': 22.11945152282715, 'learning_rate': 4.938271604938271e-05, 'mean_token_accuracy': 0.8273321330547333, 'epoch': 0.049797696856520385}
+883.5s	194	{'loss': 2.7539, 'grad_norm': 18.457103729248047, 'learning_rate': 5.555555555555556e-05, 'mean_token_accuracy': 0.8603066802024841, 'epoch': 0.056022408963585436}
+956.8s	195	{'loss': 2.7047, 'grad_norm': 15.912490844726562, 'learning_rate': 6.17283950617284e-05, 'mean_token_accuracy': 0.8588998347520829, 'epoch': 0.06224712107065048}
+1028.8s	196	{'loss': 2.6152, 'grad_norm': 62.47955322265625, 'learning_rate': 6.790123456790123e-05, 'mean_token_accuracy': 0.8666717916727066, 'epoch': 0.06847183317771553}
+1096.9s	197	{'loss': 2.4994, 'grad_norm': 13.53989315032959, 'learning_rate': 7.407407407407407e-05, 'mean_token_accuracy': 0.870748370885849, 'epoch': 0.07469654528478058}
+1168.0s	198	{'loss': 2.4767, 'grad_norm': 15.24113941192627, 'learning_rate': 8.024691358024692e-05, 'mean_token_accuracy': 0.8626161634922027, 'epoch': 0.08092125739184562}
+1237.0s	199	{'loss': 1.9704, 'grad_norm': 16.381237030029297, 'learning_rate': 8.641975308641975e-05, 'mean_token_accuracy': 0.8841579049825669, 'epoch': 0.08714596949891068}
+1313.5s	200	{'loss': 1.856, 'grad_norm': 11.87785530090332, 'learning_rate': 9.25925925925926e-05, 'mean_token_accuracy': 0.8676490843296051, 'epoch': 0.09337068160597572}
+1383.7s	201	{'loss': 1.467, 'grad_norm': 10.913667678833008, 'learning_rate': 9.876543209876543e-05, 'mean_token_accuracy': 0.8840355724096298, 'epoch': 0.09959539371304077}
+1455.4s	202	{'loss': 1.588, 'grad_norm': 45.98837661743164, 'learning_rate': 9.999242688802886e-05, 'mean_token_accuracy': 0.8788014560937881, 'epoch': 0.10582010582010581}
+1531.2s	203	{'loss': 1.6684, 'grad_norm': 9.072641372680664, 'learning_rate': 9.996166505235404e-05, 'mean_token_accuracy': 0.8680395364761353, 'epoch': 0.11204481792717087}
+1608.7s	204	{'loss': 1.7701, 'grad_norm': 17.042621612548828, 'learning_rate': 9.990725572224521e-05, 'mean_token_accuracy': 0.862513667345047, 'epoch': 0.11826953003423592}
+1676.9s	205	{'loss': 1.597, 'grad_norm': 11.6188325881958, 'learning_rate': 9.98292246503335e-05, 'mean_token_accuracy': 0.8761465936899185, 'epoch': 0.12449424214130096}
+1749.0s	206	{'loss': 1.5473, 'grad_norm': 10.682615280151367, 'learning_rate': 9.972760876972226e-05, 'mean_token_accuracy': 0.877658212184906, 'epoch': 0.13071895424836602}
+1819.6s	207	{'loss': 1.4239, 'grad_norm': 11.040915489196777, 'learning_rate': 9.960245617650613e-05, 'mean_token_accuracy': 0.8863854169845581, 'epoch': 0.13694366635543107}
+1895.5s	208	{'loss': 1.4179, 'grad_norm': 10.272089958190918, 'learning_rate': 9.945382610700657e-05, 'mean_token_accuracy': 0.8813862025737762, 'epoch': 0.1431683784624961}
+1968.8s	209	{'loss': 1.4287, 'grad_norm': 8.869451522827148, 'learning_rate': 9.928178890973455e-05, 'mean_token_accuracy': 0.8850951075553894, 'epoch': 0.14939309056956115}
+2040.7s	210	{'loss': 1.4189, 'grad_norm': 10.297338485717773, 'learning_rate': 9.908642601209366e-05, 'mean_token_accuracy': 0.8874752372503281, 'epoch': 0.1556178026766262}
+2111.7s	211	{'loss': 1.4447, 'grad_norm': 9.456953048706055, 'learning_rate': 9.886782988183952e-05, 'mean_token_accuracy': 0.8832204639911652, 'epoch': 0.16184251478369124}
+2190.2s	212	{'loss': 1.5496, 'grad_norm': 8.74522590637207, 'learning_rate': 9.86261039833136e-05, 'mean_token_accuracy': 0.8794341087341309, 'epoch': 0.16806722689075632}
+2265.2s	213	{'loss': 1.4292, 'grad_norm': 8.916216850280762, 'learning_rate': 9.836136272847223e-05, 'mean_token_accuracy': 0.8877076089382172, 'epoch': 0.17429193899782136}
+2339.9s	214	{'loss': 1.5612, 'grad_norm': 10.434651374816895, 'learning_rate': 9.807373142273395e-05, 'mean_token_accuracy': 0.8811476618051529, 'epoch': 0.1805166511048864}
+2418.2s	215	{'loss': 1.4069, 'grad_norm': 9.15360164642334, 'learning_rate': 9.776334620567085e-05, 'mean_token_accuracy': 0.8903619021177291, 'epoch': 0.18674136321195145}
+2489.4s	216	{'loss': 1.2402, 'grad_norm': 8.936736106872559, 'learning_rate': 9.743035398657201e-05, 'mean_token_accuracy': 0.9067052334547043, 'epoch': 0.1929660753190165}
+2563.7s	217	{'loss': 1.4045, 'grad_norm': 17.524211883544922, 'learning_rate': 9.707491237490937e-05, 'mean_token_accuracy': 0.8933167368173599, 'epoch': 0.19919078742608154}
+2637.3s	218	{'loss': 1.3541, 'grad_norm': 10.721561431884766, 'learning_rate': 9.669718960573927e-05, 'mean_token_accuracy': 0.894268023967743, 'epoch': 0.20541549953314658}
+2714.3s	219	{'loss': 1.3259, 'grad_norm': 10.48214340209961, 'learning_rate': 9.629736446007454e-05, 'mean_token_accuracy': 0.8962592869997025, 'epoch': 0.21164021164021163}
+2791.4s	220	{'loss': 1.2998, 'grad_norm': 7.169670581817627, 'learning_rate': 9.58756261802652e-05, 'mean_token_accuracy': 0.8966737568378449, 'epoch': 0.2178649237472767}
+2862.7s	221	{'loss': 1.1869, 'grad_norm': 9.022222518920898, 'learning_rate': 9.543217438042773e-05, 'mean_token_accuracy': 0.9083000153303147, 'epoch': 0.22408963585434175}
+2939.6s	222	{'loss': 1.3129, 'grad_norm': 8.006104469299316, 'learning_rate': 9.496721895196497e-05, 'mean_token_accuracy': 0.8944389969110489, 'epoch': 0.2303143479614068}
+3011.8s	223	{'loss': 1.1014, 'grad_norm': 10.294746398925781, 'learning_rate': 9.448097996422201e-05, 'mean_token_accuracy': 0.9141270518302917, 'epoch': 0.23653906006847183}
+3086.3s	224	{'loss': 1.2083, 'grad_norm': 8.816842079162598, 'learning_rate': 9.397368756032445e-05, 'mean_token_accuracy': 0.9005214810371399, 'epoch': 0.24276377217553688}
+3159.4s	225	{'loss': 1.2364, 'grad_norm': 7.198001861572266, 'learning_rate': 9.34455818482488e-05, 'mean_token_accuracy': 0.9031065493822098, 'epoch': 0.24898848428260192}
+3236.2s	226	{'loss': 1.2187, 'grad_norm': 8.413748741149902, 'learning_rate': 9.289691278717623e-05, 'mean_token_accuracy': 0.9029501229524612, 'epoch': 0.255213196389667}
+3310.0s	227	{'loss': 1.2183, 'grad_norm': 7.824883460998535, 'learning_rate': 9.232794006918375e-05, 'mean_token_accuracy': 0.9034484177827835, 'epoch': 0.26143790849673204}
+3381.0s	228	{'loss': 1.1446, 'grad_norm': 6.99946928024292, 'learning_rate': 9.173893299632856e-05, 'mean_token_accuracy': 0.9055071532726288, 'epoch': 0.2676626206037971}
+3458.4s	229	{'loss': 1.2419, 'grad_norm': 7.259395599365234, 'learning_rate': 9.113017035318409e-05, 'mean_token_accuracy': 0.9014610975980759, 'epoch': 0.27388733271086213}
+3528.9s	230	{'loss': 1.0793, 'grad_norm': 6.337067127227783, 'learning_rate': 9.050194027488754e-05, 'mean_token_accuracy': 0.9127979964017868, 'epoch': 0.2801120448179272}
+3602.9s	231	{'loss': 1.3235, 'grad_norm': 6.818504333496094, 'learning_rate': 8.985454011076191e-05, 'mean_token_accuracy': 0.8964010447263717, 'epoch': 0.2863367569249922}
+3676.7s	232	{'loss': 1.1964, 'grad_norm': 6.9105353355407715, 'learning_rate': 8.918827628357677e-05, 'mean_token_accuracy': 0.904047691822052, 'epoch': 0.29256146903205726}
+3744.6s	233	{'loss': 1.089, 'grad_norm': 7.166621208190918, 'learning_rate': 8.850346414451445e-05, 'mean_token_accuracy': 0.9129841744899749, 'epoch': 0.2987861811391223}
+3821.6s	234	{'loss': 1.3114, 'grad_norm': 7.230863571166992, 'learning_rate': 8.780042782391028e-05, 'mean_token_accuracy': 0.8945086866617202, 'epoch': 0.30501089324618735}
+3889.2s	235	{'loss': 1.0191, 'grad_norm': 8.149049758911133, 'learning_rate': 8.707950007783755e-05, 'mean_token_accuracy': 0.9180170476436615, 'epoch': 0.3112356053532524}
+3960.8s	236	{'loss': 1.1638, 'grad_norm': 8.546226501464844, 'learning_rate': 8.634102213060984e-05, 'mean_token_accuracy': 0.9065226495265961, 'epoch': 0.31746031746031744}
+4035.1s	237	{'loss': 1.1534, 'grad_norm': 7.681888103485107, 'learning_rate': 8.558534351327517e-05, 'mean_token_accuracy': 0.9067197203636169, 'epoch': 0.3236850295673825}
+4111.4s	238	{'loss': 1.2148, 'grad_norm': 7.775588035583496, 'learning_rate': 8.48128218981785e-05, 'mean_token_accuracy': 0.9019080817699432, 'epoch': 0.32990974167444753}
+4186.8s	239	{'loss': 1.2224, 'grad_norm': 8.465725898742676, 'learning_rate': 8.402382292967084e-05, 'mean_token_accuracy': 0.9016225010156631, 'epoch': 0.33613445378151263}
+4260.5s	240	{'loss': 1.0898, 'grad_norm': 7.728724479675293, 'learning_rate': 8.321872005104509e-05, 'mean_token_accuracy': 0.9128512799739837, 'epoch': 0.3423591658885777}
+4332.2s	241	{'loss': 1.0224, 'grad_norm': 6.516415596008301, 'learning_rate': 8.239789432778058e-05, 'mean_token_accuracy': 0.918237742781639, 'epoch': 0.3485838779956427}
+4407.6s	242	{'loss': 1.22, 'grad_norm': 6.291438102722168, 'learning_rate': 8.156173426717988e-05, 'mean_token_accuracy': 0.9010844856500626, 'epoch': 0.35480859010270777}
+4477.9s	243	{'loss': 1.335, 'grad_norm': 12.843218803405762, 'learning_rate': 8.07106356344834e-05, 'mean_token_accuracy': 0.8939503967761994, 'epoch': 0.3610333022097728}
+4557.0s	244	{'loss': 1.1969, 'grad_norm': 6.1407904624938965, 'learning_rate': 7.984500126554853e-05, 'mean_token_accuracy': 0.9033477216958999, 'epoch': 0.36725801431683786}
+4628.3s	245	{'loss': 1.0778, 'grad_norm': 6.882460117340088, 'learning_rate': 7.896524087618238e-05, 'mean_token_accuracy': 0.9144117593765259, 'epoch': 0.3734827264239029}
+4702.4s	246	{'loss': 1.2052, 'grad_norm': 6.79000186920166, 'learning_rate': 7.807177086821802e-05, 'mean_token_accuracy': 0.9027785539627076, 'epoch': 0.37970743853096794}
+4781.1s	247	{'loss': 1.2641, 'grad_norm': 7.749330520629883, 'learning_rate': 7.716501413242616e-05, 'mean_token_accuracy': 0.9007755041122436, 'epoch': 0.385932150638033}
+4850.6s	248	{'loss': 1.0731, 'grad_norm': 5.813044548034668, 'learning_rate': 7.624539984835557e-05, 'mean_token_accuracy': 0.913277193903923, 'epoch': 0.39215686274509803}
+4920.7s	249	{'loss': 1.0325, 'grad_norm': 8.074097633361816, 'learning_rate': 7.53133632811969e-05, 'mean_token_accuracy': 0.9146709233522415, 'epoch': 0.3983815748521631}
+4997.5s	250	{'loss': 1.1117, 'grad_norm': 5.005011558532715, 'learning_rate': 7.436934557576612e-05, 'mean_token_accuracy': 0.908730360865593, 'epoch': 0.4046062869592281}
+5076.8s	251	{'loss': 1.3946, 'grad_norm': 6.970795631408691, 'learning_rate': 7.341379354770496e-05, 'mean_token_accuracy': 0.887138906121254, 'epoch': 0.41083099906629317}
+5147.7s	252	{'loss': 0.9349, 'grad_norm': 6.366714954376221, 'learning_rate': 7.244715947199749e-05, 'mean_token_accuracy': 0.9211867332458497, 'epoch': 0.4170557111733582}
+5222.5s	253	{'loss': 1.3464, 'grad_norm': 6.350222587585449, 'learning_rate': 7.146990086890258e-05, 'mean_token_accuracy': 0.8937756150960923, 'epoch': 0.42328042328042326}
+5293.0s	254	{'loss': 1.0574, 'grad_norm': 5.8510847091674805, 'learning_rate': 7.04824802874035e-05, 'mean_token_accuracy': 0.9128065496683121, 'epoch': 0.4295051353874883}
+5365.1s	255	{'loss': 1.0911, 'grad_norm': 7.657394886016846, 'learning_rate': 6.94853650862779e-05, 'mean_token_accuracy': 0.9118566662073135, 'epoch': 0.4357298474945534}
+5437.5s	256	{'loss': 1.2008, 'grad_norm': 6.684910297393799, 'learning_rate': 6.847902721289068e-05, 'mean_token_accuracy': 0.9020662546157837, 'epoch': 0.44195455960161845}
+5516.9s	257	{'loss': 1.2025, 'grad_norm': 5.871783256530762, 'learning_rate': 6.74639429798154e-05, 'mean_token_accuracy': 0.9026307016611099, 'epoch': 0.4481792717086835}
+5588.4s	258	{'loss': 1.0678, 'grad_norm': 5.209487438201904, 'learning_rate': 6.644059283938938e-05, 'mean_token_accuracy': 0.9132474213838577, 'epoch': 0.45440398381574854}
+5661.7s	259	{'loss': 1.1283, 'grad_norm': 8.579549789428711, 'learning_rate': 6.540946115630952e-05, 'mean_token_accuracy': 0.9086674302816391, 'epoch': 0.4606286959228136}
+5737.8s	260	{'loss': 1.1769, 'grad_norm': 6.20737886428833, 'learning_rate': 6.437103597837631e-05, 'mean_token_accuracy': 0.9049709945917129, 'epoch': 0.4668534080298786}
+5815.4s	261	{'loss': 1.0833, 'grad_norm': 5.87519645690918, 'learning_rate': 6.33258088054945e-05, 'mean_token_accuracy': 0.9105425268411637, 'epoch': 0.47307812013694367}
+5886.8s	262	{'loss': 1.1951, 'grad_norm': 9.120285987854004, 'learning_rate': 6.227427435703997e-05, 'mean_token_accuracy': 0.9033458143472671, 'epoch': 0.4793028322440087}
+5960.7s	263	{'loss': 1.0585, 'grad_norm': 5.97613525390625, 'learning_rate': 6.121693033770274e-05, 'mean_token_accuracy': 0.913442873954773, 'epoch': 0.48552754435107376}
+6035.8s	264	{'loss': 1.1589, 'grad_norm': 6.201623439788818, 'learning_rate': 6.015427720191693e-05, 'mean_token_accuracy': 0.9056418389081955, 'epoch': 0.4917522564581388}
+6111.0s	265	{'loss': 1.0287, 'grad_norm': 5.969268798828125, 'learning_rate': 5.9086817916989335e-05, 'mean_token_accuracy': 0.9156713008880615, 'epoch': 0.49797696856520385}
+6181.9s	266	{'loss': 1.0012, 'grad_norm': 6.529628753662109, 'learning_rate': 5.8015057725038534e-05, 'mean_token_accuracy': 0.9163252055644989, 'epoch': 0.5042016806722689}
+6256.4s	267	{'loss': 1.1396, 'grad_norm': 6.35870361328125, 'learning_rate': 5.693950390385736e-05, 'mean_token_accuracy': 0.9098764836788178, 'epoch': 0.510426392779334}
+6329.7s	268	{'loss': 1.0047, 'grad_norm': 5.893141746520996, 'learning_rate': 5.586066552681179e-05, 'mean_token_accuracy': 0.9172134011983871, 'epoch': 0.516651104886399}
+6400.1s	269	{'loss': 1.2605, 'grad_norm': 7.020736217498779, 'learning_rate': 5.477905322189015e-05, 'mean_token_accuracy': 0.901083791255951, 'epoch': 0.5228758169934641}
+6472.3s	270	{'loss': 1.3298, 'grad_norm': 6.692140579223633, 'learning_rate': 5.3695178930016196e-05, 'mean_token_accuracy': 0.8939760982990265, 'epoch': 0.5291005291005291}
+6549.7s	271	{'loss': 1.1852, 'grad_norm': 6.17300271987915, 'learning_rate': 5.260955566274103e-05, 'mean_token_accuracy': 0.9028533399105072, 'epoch': 0.5353252412075942}
+6620.0s	272	{'loss': 0.996, 'grad_norm': 6.636917591094971, 'learning_rate': 5.1522697259428146e-05, 'mean_token_accuracy': 0.916986522078514, 'epoch': 0.5415499533146592}
+6688.3s	273	{'loss': 1.0412, 'grad_norm': 6.360948085784912, 'learning_rate': 5.043511814404673e-05, 'mean_token_accuracy': 0.9157345026731492, 'epoch': 0.5477746654217243}
+6758.4s	274	{'loss': 1.117, 'grad_norm': 5.486238956451416, 'learning_rate': 4.934733308168821e-05, 'mean_token_accuracy': 0.9111135810613632, 'epoch': 0.5539993775287892}
+6832.0s	275	{'loss': 1.0587, 'grad_norm': 5.9229326248168945, 'learning_rate': 4.825985693492129e-05, 'mean_token_accuracy': 0.9117091685533524, 'epoch': 0.5602240896358543}
+6902.7s	276	{'loss': 1.0243, 'grad_norm': 7.63810396194458, 'learning_rate': 4.717320442010105e-05, 'mean_token_accuracy': 0.9156468600034714, 'epoch': 0.5664488017429193}
+6974.2s	277	{'loss': 1.0394, 'grad_norm': 7.229092121124268, 'learning_rate': 4.6087889863747e-05, 'mean_token_accuracy': 0.914504987001419, 'epoch': 0.5726735138499844}
+7045.6s	278	{'loss': 1.1658, 'grad_norm': 6.495697498321533, 'learning_rate': 4.500442695910582e-05, 'mean_token_accuracy': 0.9065514743328095, 'epoch': 0.5788982259570495}
+7118.3s	279	{'loss': 1.1182, 'grad_norm': 8.530102729797363, 'learning_rate': 4.392332852301379e-05, 'mean_token_accuracy': 0.9088263243436814, 'epoch': 0.5851229380641145}
+7192.6s	280	{'loss': 1.044, 'grad_norm': 9.871593475341797, 'learning_rate': 4.2845106253174e-05, 'mean_token_accuracy': 0.9149742722511292, 'epoch': 0.5913476501711796}
+7263.9s	281	{'loss': 1.0346, 'grad_norm': 5.30088996887207, 'learning_rate': 4.17702704859633e-05, 'mean_token_accuracy': 0.9137288063764573, 'epoch': 0.5975723622782446}
+7334.8s	282	{'loss': 0.9913, 'grad_norm': 6.696462631225586, 'learning_rate': 4.069932995488361e-05, 'mean_token_accuracy': 0.9174795180559159, 'epoch': 0.6037970743853097}
+7408.6s	283	{'loss': 1.1158, 'grad_norm': 7.139190673828125, 'learning_rate': 3.9632791549771776e-05, 'mean_token_accuracy': 0.9071041584014893, 'epoch': 0.6100217864923747}
+7480.3s	284	{'loss': 1.0232, 'grad_norm': 5.105393886566162, 'learning_rate': 3.8571160076882204e-05, 'mean_token_accuracy': 0.9112878054380417, 'epoch': 0.6162464985994398}
+7549.4s	285	{'loss': 1.2498, 'grad_norm': 6.503770351409912, 'learning_rate': 3.7514938019955554e-05, 'mean_token_accuracy': 0.9000416249036789, 'epoch': 0.6224712107065048}
+7626.3s	286	{'loss': 1.1556, 'grad_norm': 6.854659557342529, 'learning_rate': 3.646462530238684e-05, 'mean_token_accuracy': 0.9048352032899857, 'epoch': 0.6286959228135699}
+7694.9s	287	{'loss': 0.8972, 'grad_norm': 5.896780490875244, 'learning_rate': 3.542071905060522e-05, 'mean_token_accuracy': 0.9252064198255538, 'epoch': 0.6349206349206349}
+7768.8s	288	{'loss': 1.2479, 'grad_norm': 6.918076515197754, 'learning_rate': 3.4383713358777735e-05, 'mean_token_accuracy': 0.8989383667707443, 'epoch': 0.6411453470277}
+7840.3s	289	{'loss': 0.9668, 'grad_norm': 6.266076564788818, 'learning_rate': 3.335409905494828e-05, 'mean_token_accuracy': 0.9194049000740051, 'epoch': 0.647370059134765}
+7913.0s	290	{'loss': 1.0516, 'grad_norm': 7.171932697296143, 'learning_rate': 3.233236346872227e-05, 'mean_token_accuracy': 0.9131146520376205, 'epoch': 0.6535947712418301}
+7986.7s	291	{'loss': 1.0026, 'grad_norm': 5.753011703491211, 'learning_rate': 3.131899020060754e-05, 'mean_token_accuracy': 0.9174857854843139, 'epoch': 0.6598194833488951}
+8059.6s	292	{'loss': 1.0167, 'grad_norm': 5.823878288269043, 'learning_rate': 3.0314458893119808e-05, 'mean_token_accuracy': 0.9165598392486572, 'epoch': 0.6660441954559602}
+8132.3s	293	{'loss': 1.0136, 'grad_norm': 5.710934162139893, 'learning_rate': 2.9319245003761895e-05, 'mean_token_accuracy': 0.9140741556882859, 'epoch': 0.6722689075630253}
+8204.2s	294	{'loss': 0.9649, 'grad_norm': 5.641751766204834, 'learning_rate': 2.8333819579983623e-05, 'mean_token_accuracy': 0.9168492317199707, 'epoch': 0.6784936196700903}
+8278.6s	295	{'loss': 1.0198, 'grad_norm': 7.440797328948975, 'learning_rate': 2.7358649036228866e-05, 'mean_token_accuracy': 0.913846132159233, 'epoch': 0.6847183317771554}
+8352.0s	296	{'loss': 1.2616, 'grad_norm': 12.49362850189209, 'learning_rate': 2.6394194933175875e-05, 'mean_token_accuracy': 0.8990749001502991, 'epoch': 0.6909430438842203}
+8422.4s	297	{'loss': 0.9683, 'grad_norm': 5.846670150756836, 'learning_rate': 2.5440913759274514e-05, 'mean_token_accuracy': 0.9210234582424164, 'epoch': 0.6971677559912854}
+8491.8s	298	{'loss': 0.9978, 'grad_norm': 6.809036731719971, 'learning_rate': 2.4499256714684565e-05, 'mean_token_accuracy': 0.9183848261833191, 'epoch': 0.7033924680983504}
+8565.3s	299	{'loss': 1.0405, 'grad_norm': 5.578284740447998, 'learning_rate': 2.3569669497716883e-05, 'mean_token_accuracy': 0.9131626099348068, 'epoch': 0.7096171802054155}
+8637.0s	300	{'loss': 0.9543, 'grad_norm': 5.991875648498535, 'learning_rate': 2.2652592093878666e-05, 'mean_token_accuracy': 0.9184255748987198, 'epoch': 0.7158418923124805}
+8707.8s	301	{'loss': 1.0077, 'grad_norm': 6.183825492858887, 'learning_rate': 2.1748458567622733e-05, 'mean_token_accuracy': 0.9162251025438308, 'epoch': 0.7220666044195456}
+8784.3s	302	{'loss': 1.0408, 'grad_norm': 5.32463264465332, 'learning_rate': 2.0857696856899232e-05, 'mean_token_accuracy': 0.9131500005722046, 'epoch': 0.7282913165266106}
+8860.7s	303	{'loss': 0.9305, 'grad_norm': 5.4785614013671875, 'learning_rate': 1.998072857060722e-05, 'mean_token_accuracy': 0.9212332993745804, 'epoch': 0.7345160286336757}
+8935.2s	304	{'loss': 1.2461, 'grad_norm': 7.072784900665283, 'learning_rate': 1.9117968789041712e-05, 'mean_token_accuracy': 0.9000404119491577, 'epoch': 0.7407407407407407}
+9015.0s	305	{'loss': 1.009, 'grad_norm': 6.240063667297363, 'learning_rate': 1.826982586743085e-05, 'mean_token_accuracy': 0.9148442447185516, 'epoch': 0.7469654528478058}
+9092.2s	306	{'loss': 1.0971, 'grad_norm': 10.826798439025879, 'learning_rate': 1.7436701242656272e-05, 'mean_token_accuracy': 0.9085891962051391, 'epoch': 0.7531901649548708}
+9163.2s	307	{'loss': 0.9507, 'grad_norm': 5.245047092437744, 'learning_rate': 1.661898924324777e-05, 'mean_token_accuracy': 0.9211351484060287, 'epoch': 0.7594148770619359}
+9235.5s	308	{'loss': 1.0207, 'grad_norm': 5.376429557800293, 'learning_rate': 1.5817076902742622e-05, 'mean_token_accuracy': 0.9135839879512787, 'epoch': 0.765639589169001}
+9303.8s	309	{'loss': 1.0812, 'grad_norm': 6.159409523010254, 'learning_rate': 1.5031343776497736e-05, 'mean_token_accuracy': 0.9110858261585235, 'epoch': 0.771864301276066}
+9374.1s	310	{'loss': 0.9175, 'grad_norm': 5.976900577545166, 'learning_rate': 1.4262161762041121e-05, 'mean_token_accuracy': 0.9230250656604767, 'epoch': 0.7780890133831311}
+9446.1s	311	{'loss': 0.952, 'grad_norm': 5.254830837249756, 'learning_rate': 1.3509894923048145e-05, 'mean_token_accuracy': 0.9202074706554413, 'epoch': 0.7843137254901961}
+9517.1s	312	{'loss': 1.0227, 'grad_norm': 6.211521625518799, 'learning_rate': 1.2774899317025468e-05, 'mean_token_accuracy': 0.9153332829475402, 'epoch': 0.7905384375972612}
+9592.9s	313	{'loss': 1.0609, 'grad_norm': 6.923564910888672, 'learning_rate': 1.2057522826784545e-05, 'mean_token_accuracy': 0.912021005153656, 'epoch': 0.7967631497043262}
+9670.2s	314	{'loss': 1.0444, 'grad_norm': 5.73432731628418, 'learning_rate': 1.1358104995784186e-05, 'mean_token_accuracy': 0.9127951622009277, 'epoch': 0.8029878618113913}
+9744.5s	315	{'loss': 1.032, 'grad_norm': 5.8286614418029785, 'learning_rate': 1.0676976867420308e-05, 'mean_token_accuracy': 0.9125215470790863, 'epoch': 0.8092125739184562}
+9816.8s	316	{'loss': 0.9769, 'grad_norm': 6.4095377922058105, 'learning_rate': 1.0014460828338928e-05, 'mean_token_accuracy': 0.917665085196495, 'epoch': 0.8154372860255213}
+9886.4s	317	{'loss': 1.3265, 'grad_norm': 5.73832893371582, 'learning_rate': 9.370870455846354e-06, 'mean_token_accuracy': 0.9005295544862747, 'epoch': 0.8216619981325863}
+9954.7s	318	{'loss': 1.0506, 'grad_norm': 5.097095012664795, 'learning_rate': 8.746510369489103e-06, 'mean_token_accuracy': 0.9155605107545852, 'epoch': 0.8278867102396514}
+10026.4s	319	{'loss': 0.8456, 'grad_norm': 6.518362998962402, 'learning_rate': 8.141676086873572e-06, 'mean_token_accuracy': 0.9302157253026963, 'epoch': 0.8341114223467164}
+10097.6s	320	{'loss': 1.0116, 'grad_norm': 5.985706806182861, 'learning_rate': 7.556653883793724e-06, 'mean_token_accuracy': 0.9151253253221512, 'epoch': 0.8403361344537815}
+10176.6s	321	{'loss': 1.1499, 'grad_norm': 6.0550537109375, 'learning_rate': 6.991720658733169e-06, 'mean_token_accuracy': 0.906779146194458, 'epoch': 0.8465608465608465}
+10246.9s	322	{'loss': 0.9846, 'grad_norm': 4.782916069030762, 'learning_rate': 6.447143801805516e-06, 'mean_token_accuracy': 0.9181506395339966, 'epoch': 0.8527855586679116}
+10316.5s	323	{'loss': 1.1074, 'grad_norm': 5.805164813995361, 'learning_rate': 5.923181068195266e-06, 'mean_token_accuracy': 0.9088136315345764, 'epoch': 0.8590102707749766}
+10393.4s	324	{'loss': 0.9319, 'grad_norm': 5.8368401527404785, 'learning_rate': 5.420080456158971e-06, 'mean_token_accuracy': 0.91924649477005, 'epoch': 0.8652349828820417}
+10463.0s	325	{'loss': 1.0114, 'grad_norm': 4.586297035217285, 'learning_rate': 4.9380800896444424e-06, 'mean_token_accuracy': 0.9180627912282944, 'epoch': 0.8714596949891068}
+10532.3s	326	{'loss': 1.0496, 'grad_norm': 6.509449005126953, 'learning_rate': 4.477408105583741e-06, 'mean_token_accuracy': 0.9150227963924408, 'epoch': 0.8776844070961718}
+10605.3s	327	{'loss': 1.0841, 'grad_norm': 6.209763526916504, 'learning_rate': 4.038282545912958e-06, 'mean_token_accuracy': 0.9073799639940262, 'epoch': 0.8839091192032369}
+10677.4s	328	{'loss': 0.8991, 'grad_norm': 5.866238594055176, 'learning_rate': 3.620911254370224e-06, 'mean_token_accuracy': 0.9257223933935166, 'epoch': 0.8901338313103019}
+10750.0s	329	{'loss': 0.9848, 'grad_norm': 6.059309482574463, 'learning_rate': 3.225491778120632e-06, 'mean_token_accuracy': 0.9174540907144546, 'epoch': 0.896358543417367}
+10825.4s	330	{'loss': 0.9752, 'grad_norm': 5.803595066070557, 'learning_rate': 2.85221127425459e-06, 'mean_token_accuracy': 0.9166698008775711, 'epoch': 0.902583255524432}
+10904.9s	331	{'loss': 1.2308, 'grad_norm': 5.651976108551025, 'learning_rate': 2.5012464212040287e-06, 'mean_token_accuracy': 0.8984558612108231, 'epoch': 0.9088079676314971}
+10982.2s	332	{'loss': 1.0853, 'grad_norm': 6.480546951293945, 'learning_rate': 2.1727633351182e-06, 'mean_token_accuracy': 0.9121251344680786, 'epoch': 0.9150326797385621}
+11051.3s	333	{'loss': 1.0087, 'grad_norm': 6.009836196899414, 'learning_rate': 1.8669174912388066e-06, 'mean_token_accuracy': 0.9180324792861938, 'epoch': 0.9212573918456272}
+11130.5s	334	{'loss': 1.1413, 'grad_norm': 4.942838191986084, 'learning_rate': 1.5838536503115675e-06, 'mean_token_accuracy': 0.907481437921524, 'epoch': 0.9274821039526921}
+11198.7s	335	{'loss': 0.8987, 'grad_norm': 10.978991508483887, 'learning_rate': 1.3237057900691407e-06, 'mean_token_accuracy': 0.923818576335907, 'epoch': 0.9337068160597572}
+11272.6s	336	{'loss': 0.9651, 'grad_norm': 5.483642578125, 'learning_rate': 1.0865970418177051e-06, 'mean_token_accuracy': 0.919727087020874, 'epoch': 0.9399315281668222}
+11348.3s	337	{'loss': 1.1873, 'grad_norm': 6.32901668548584, 'learning_rate': 8.726396321573682e-07, 'mean_token_accuracy': 0.9043443858623504, 'epoch': 0.9461562402738873}
+11426.1s	338	{'loss': 1.1379, 'grad_norm': 5.8701910972595215, 'learning_rate': 6.819348298638839e-07, 'mean_token_accuracy': 0.9075517654418945, 'epoch': 0.9523809523809523}
+11499.5s	339	{'loss': 0.9786, 'grad_norm': 6.011444568634033, 'learning_rate': 5.145728979568165e-07, 'mean_token_accuracy': 0.9156298130750656, 'epoch': 0.9586056644880174}
+11570.3s	340	{'loss': 0.9873, 'grad_norm': 5.8491411209106445, 'learning_rate': 3.706330509769429e-07, 'mean_token_accuracy': 0.9171351283788681, 'epoch': 0.9648303765950825}
+11641.0s	341	{'loss': 0.9591, 'grad_norm': 5.713586330413818, 'learning_rate': 2.501834174929718e-07, 'mean_token_accuracy': 0.9214774876832962, 'epoch': 0.9710550887021475}
+11714.3s	342	{'loss': 0.9192, 'grad_norm': 8.300609588623047, 'learning_rate': 1.5328100785542697e-07, 'mean_token_accuracy': 0.9214281499385834, 'epoch': 0.9772798008092126}
+11781.1s	343	{'loss': 0.8493, 'grad_norm': 5.066760063171387, 'learning_rate': 7.997168721292082e-08, 'mean_token_accuracy': 0.9281574070453644, 'epoch': 0.9835045129162776}
+11854.6s	344	{'loss': 0.993, 'grad_norm': 5.93596076965332, 'learning_rate': 3.029015380359157e-08, 'mean_token_accuracy': 0.9170669436454773, 'epoch': 0.9897292250233427}
+11929.4s	345	{'loss': 1.0838, 'grad_norm': 6.32205057144165, 'learning_rate': 4.2599225319850385e-09, 'mean_token_accuracy': 0.9127131938934326, 'epoch': 0.9959539371304077}
+11969.9s	346	The 'batch_size' argument of HybridCache is deprecated and will be removed in v4.49. Use the more precisely named 'max_batch_size' argument instead.
+11969.9s	347	The 'batch_size' attribute of HybridCache is deprecated and will be removed in v4.49. Use the more precisely named 'self.max_batch_size' attribute instead.
+12402.5s	348	{'eval_loss': 0.2534171938896179, 'eval_runtime': 432.5793, 'eval_samples_per_second': 0.825, 'eval_steps_per_second': 0.825, 'eval_mean_token_accuracy': 0.9162958682714116, 'epoch': 0.9996887643946467}
+12402.5s	349	{'train_runtime': 12194.8901, 'train_samples_per_second': 0.263, 'train_steps_per_second': 0.066, 'train_loss': 1.437865365635265, 'epoch': 0.9996887643946467}
+12402.5s	350	/usr/local/lib/python3.10/dist-packages/peft/utils/save_and_load.py:230: UserWarning: Setting `save_embedding_layers` to `True` as embedding layers found in `target_modules`.
+12402.5s	351	  warnings.warn("Setting `save_embedding_layers` to `True` as embedding layers found in `target_modules`.")
+12409.4s	352	------- _train_model() ------------
+12409.4s	353	+++++++ _save_model_to_hub() ++++++++++++
+12426.6s	354	
+adapter_model.safetensors:   0%|          | 0.00/2.48G [00:00<?, ?B/s]
+12426.6s	355	
+events.out.tfevents.1740588352.07a316d4dab9.25.0:   0%|          | 0.00/50.2k [00:00<?, ?B/s][A
+12426.6s	356	
+12426.6s	357	
+Upload 3 LFS files:   0%|          | 0/3 [00:00<?, ?it/s][A[A
+12426.6s	358	
+12426.6s	359	
+12427.1s	360	
+training_args.bin:   0%|          | 0.00/5.62k [00:00<?, ?B/s][A[A[A
+adapter_model.safetensors:   0%|          | 2.57M/2.48G [00:00<02:18, 17.8MB/s]
+events.out.tfevents.1740588352.07a316d4dab9.25.0: 100%|██████████| 50.2k/50.2k [00:00<00:00, 108kB/s]
+12427.4s	361	
+adapter_model.safetensors:   0%|          | 4.52M/2.48G [00:00<05:52, 7.01MB/s]
+adapter_model.safetensors:   0%|          | 8.21M/2.48G [00:00<03:14, 12.7MB/s]
+training_args.bin: 100%|██████████| 5.62k/5.62k [00:00<00:00, 7.26kB/s]
+12513.1s	362	
+adapter_model.safetensors:   0%|          | 10.3M/2.48G [00:01<06:11, 6.63MB/s]
+adapter_model.safetensors:   0%|          | 12.2M/2.48G [00:01<05:43, 7.17MB/s]
+adapter_model.safetensors:   1%|          | 13.8M/2.48G [00:01<05:11, 7.90MB/s]
+adapter_model.safetensors:   1%|          | 16.0M/2.48G [00:02<09:37, 4.26MB/s]
+adapter_model.safetensors:   1%|          | 20.3M/2.48G [00:02<05:24, 7.57MB/s]
+adapter_model.safetensors:   1%|          | 25.1M/2.48G [00:02<03:39, 11.2MB/s]
+adapter_model.safetensors:   1%|          | 27.3M/2.48G [00:03<07:03, 5.78MB/s]
+adapter_model.safetensors:   1%|          | 29.0M/2.48G [00:04<06:44, 6.05MB/s]
+adapter_model.safetensors:   1%|          | 30.3M/2.48G [00:04<06:13, 6.56MB/s]
+adapter_model.safetensors:   1%|▏         | 32.0M/2.48G [00:05<09:03, 4.50MB/s]
+adapter_model.safetensors:   2%|▏         | 38.3M/2.48G [00:05<04:17, 9.47MB/s]
+adapter_model.safetensors:   2%|▏         | 41.5M/2.48G [00:05<03:26, 11.8MB/s]
+adapter_model.safetensors:   2%|▏         | 44.1M/2.48G [00:05<04:57, 8.19MB/s]
+adapter_model.safetensors:   2%|▏         | 46.0M/2.48G [00:06<04:44, 8.53MB/s]
+adapter_model.safetensors:   2%|▏         | 47.7M/2.48G [00:06<04:24, 9.20MB/s]
+adapter_model.safetensors:   2%|▏         | 49.3M/2.48G [00:06<07:37, 5.30MB/s]
+adapter_model.safetensors:   3%|▎         | 64.0M/2.48G [00:07<02:56, 13.7MB/s]
+adapter_model.safetensors:   3%|▎         | 80.0M/2.48G [00:07<01:58, 20.2MB/s]
+adapter_model.safetensors:   4%|▍         | 96.0M/2.48G [00:08<01:49, 21.6MB/s]
+adapter_model.safetensors:   5%|▍         | 112M/2.48G [00:09<01:36, 24.5MB/s] 
+adapter_model.safetensors:   5%|▌         | 128M/2.48G [00:09<01:30, 26.0MB/s]
+adapter_model.safetensors:   6%|▌         | 144M/2.48G [00:10<01:27, 26.8MB/s]
+adapter_model.safetensors:   6%|▋         | 160M/2.48G [00:10<01:35, 24.3MB/s]
+adapter_model.safetensors:   7%|▋         | 176M/2.48G [00:11<01:21, 28.1MB/s]
+adapter_model.safetensors:   7%|▋         | 183M/2.48G [00:11<01:15, 30.2MB/s]
+adapter_model.safetensors:   8%|▊         | 187M/2.48G [00:12<01:52, 20.4MB/s]
+adapter_model.safetensors:   8%|▊         | 190M/2.48G [00:12<01:57, 19.4MB/s]
+adapter_model.safetensors:   8%|▊         | 192M/2.48G [00:13<03:43, 10.2MB/s]
+adapter_model.safetensors:   8%|▊         | 208M/2.48G [00:13<02:24, 15.6MB/s]
+adapter_model.safetensors:   9%|▉         | 224M/2.48G [00:14<01:55, 19.5MB/s]
+adapter_model.safetensors:  10%|▉         | 240M/2.48G [00:15<01:52, 19.8MB/s]
+adapter_model.safetensors:  10%|█         | 256M/2.48G [00:15<01:39, 22.4MB/s]
+adapter_model.safetensors:  11%|█         | 272M/2.48G [00:16<01:26, 25.6MB/s]
+adapter_model.safetensors:  12%|█▏        | 288M/2.48G [00:16<01:17, 28.4MB/s]
+adapter_model.safetensors:  12%|█▏        | 304M/2.48G [00:17<01:10, 30.7MB/s]
+adapter_model.safetensors:  13%|█▎        | 320M/2.48G [00:17<01:07, 32.0MB/s]
+adapter_model.safetensors:  14%|█▎        | 336M/2.48G [00:18<01:05, 32.9MB/s]
+adapter_model.safetensors:  14%|█▍        | 352M/2.48G [00:18<01:01, 34.7MB/s]
+adapter_model.safetensors:  15%|█▍        | 368M/2.48G [00:18<01:02, 33.9MB/s]
+adapter_model.safetensors:  16%|█▌        | 384M/2.48G [00:19<00:58, 35.9MB/s]
+adapter_model.safetensors:  16%|█▌        | 400M/2.48G [00:19<00:57, 36.4MB/s]
+adapter_model.safetensors:  17%|█▋        | 416M/2.48G [00:20<01:05, 31.4MB/s]
+adapter_model.safetensors:  17%|█▋        | 432M/2.48G [00:21<01:06, 30.6MB/s]
+adapter_model.safetensors:  18%|█▊        | 448M/2.48G [00:21<01:01, 32.8MB/s]
+adapter_model.safetensors:  19%|█▊        | 464M/2.48G [00:21<00:59, 34.0MB/s]
+adapter_model.safetensors:  19%|█▉        | 480M/2.48G [00:22<00:57, 34.5MB/s]
+adapter_model.safetensors:  20%|██        | 496M/2.48G [00:22<00:53, 36.9MB/s]
+adapter_model.safetensors:  21%|██        | 512M/2.48G [00:23<00:53, 36.7MB/s]
+adapter_model.safetensors:  21%|██▏       | 528M/2.48G [00:23<00:53, 36.5MB/s]
+adapter_model.safetensors:  22%|██▏       | 544M/2.48G [00:23<00:52, 37.1MB/s]
+adapter_model.safetensors:  23%|██▎       | 560M/2.48G [00:24<00:54, 35.4MB/s]
+adapter_model.safetensors:  23%|██▎       | 576M/2.48G [00:24<00:52, 36.1MB/s]
+adapter_model.safetensors:  24%|██▍       | 592M/2.48G [00:25<00:50, 37.0MB/s]
+adapter_model.safetensors:  25%|██▍       | 608M/2.48G [00:25<00:49, 37.4MB/s]
+adapter_model.safetensors:  25%|██▌       | 624M/2.48G [00:26<00:50, 36.7MB/s]
+adapter_model.safetensors:  26%|██▌       | 640M/2.48G [00:26<00:49, 36.8MB/s]
+adapter_model.safetensors:  26%|██▋       | 656M/2.48G [00:27<00:49, 36.5MB/s]
+adapter_model.safetensors:  27%|██▋       | 672M/2.48G [00:28<01:15, 23.9MB/s]
+adapter_model.safetensors:  28%|██▊       | 688M/2.48G [00:28<01:07, 26.6MB/s]
+adapter_model.safetensors:  28%|██▊       | 704M/2.48G [00:29<00:59, 29.9MB/s]
+adapter_model.safetensors:  29%|██▉       | 720M/2.48G [00:29<00:55, 31.9MB/s]
+adapter_model.safetensors:  30%|██▉       | 736M/2.48G [00:29<00:51, 33.7MB/s]
+adapter_model.safetensors:  30%|███       | 752M/2.48G [00:30<01:01, 28.1MB/s]
+adapter_model.safetensors:  31%|███       | 768M/2.48G [00:31<00:57, 29.9MB/s]
+adapter_model.safetensors:  32%|███▏      | 784M/2.48G [00:31<00:58, 28.7MB/s]
+adapter_model.safetensors:  32%|███▏      | 800M/2.48G [00:32<00:53, 31.5MB/s]
+adapter_model.safetensors:  33%|███▎      | 816M/2.48G [00:32<01:00, 27.4MB/s]
+adapter_model.safetensors:  34%|███▎      | 832M/2.48G [00:33<01:06, 24.7MB/s]
+adapter_model.safetensors:  34%|███▍      | 848M/2.48G [00:34<01:04, 25.3MB/s]
+adapter_model.safetensors:  35%|███▍      | 864M/2.48G [00:34<00:57, 27.8MB/s]
+adapter_model.safetensors:  36%|███▌      | 880M/2.48G [00:35<00:52, 30.7MB/s]
+adapter_model.safetensors:  36%|███▌      | 896M/2.48G [00:35<00:46, 33.8MB/s]
+adapter_model.safetensors:  37%|███▋      | 912M/2.48G [00:36<01:00, 25.6MB/s]
+adapter_model.safetensors:  37%|███▋      | 928M/2.48G [00:37<01:00, 25.6MB/s]
+adapter_model.safetensors:  38%|███▊      | 944M/2.48G [00:37<00:54, 28.3MB/s]
+adapter_model.safetensors:  39%|███▉      | 960M/2.48G [00:37<00:48, 31.0MB/s]
+adapter_model.safetensors:  39%|███▉      | 976M/2.48G [00:38<00:47, 31.9MB/s]
+adapter_model.safetensors:  40%|████      | 992M/2.48G [00:38<00:44, 33.4MB/s]
+adapter_model.safetensors:  41%|████      | 1.01G/2.48G [00:39<00:43, 33.6MB/s]
+adapter_model.safetensors:  41%|████▏     | 1.02G/2.48G [00:39<00:42, 34.5MB/s]
+adapter_model.safetensors:  42%|████▏     | 1.04G/2.48G [00:40<00:41, 34.3MB/s]
+adapter_model.safetensors:  43%|████▎     | 1.06G/2.48G [00:40<00:39, 35.7MB/s]
+adapter_model.safetensors:  43%|████▎     | 1.07G/2.48G [00:41<00:40, 34.8MB/s]
+adapter_model.safetensors:  44%|████▍     | 1.09G/2.48G [00:41<00:38, 35.7MB/s]
+adapter_model.safetensors:  45%|████▍     | 1.10G/2.48G [00:41<00:36, 37.4MB/s]
+adapter_model.safetensors:  45%|████▌     | 1.12G/2.48G [00:42<00:37, 36.4MB/s]
+adapter_model.safetensors:  46%|████▌     | 1.14G/2.48G [00:42<00:36, 36.3MB/s]
+adapter_model.safetensors:  47%|████▋     | 1.15G/2.48G [00:43<00:38, 34.8MB/s]
+adapter_model.safetensors:  47%|████▋     | 1.17G/2.48G [00:43<00:38, 33.9MB/s]
+adapter_model.safetensors:  48%|████▊     | 1.18G/2.48G [00:44<00:44, 28.9MB/s]
+adapter_model.safetensors:  48%|████▊     | 1.20G/2.48G [00:44<00:40, 31.6MB/s]
+adapter_model.safetensors:  49%|████▉     | 1.22G/2.48G [00:45<00:38, 32.7MB/s]
+adapter_model.safetensors:  50%|████▉     | 1.23G/2.48G [00:46<00:41, 30.2MB/s]
+adapter_model.safetensors:  50%|█████     | 1.25G/2.48G [00:46<00:38, 31.5MB/s]
+adapter_model.safetensors:  51%|█████     | 1.26G/2.48G [00:47<00:39, 31.0MB/s]
+adapter_model.safetensors:  52%|█████▏    | 1.28G/2.48G [00:47<00:36, 32.9MB/s]
+adapter_model.safetensors:  52%|█████▏    | 1.30G/2.48G [00:47<00:36, 32.0MB/s]
+adapter_model.safetensors:  53%|█████▎    | 1.31G/2.48G [00:48<00:34, 33.4MB/s]
+adapter_model.safetensors:  54%|█████▎    | 1.33G/2.48G [00:48<00:34, 33.6MB/s]
+adapter_model.safetensors:  54%|█████▍    | 1.34G/2.48G [00:49<00:36, 31.0MB/s]
+adapter_model.safetensors:  55%|█████▍    | 1.36G/2.48G [00:49<00:33, 32.8MB/s]
+adapter_model.safetensors:  56%|█████▌    | 1.38G/2.48G [00:50<00:32, 33.7MB/s]
+adapter_model.safetensors:  56%|█████▌    | 1.39G/2.48G [00:50<00:31, 34.1MB/s]
+adapter_model.safetensors:  57%|█████▋    | 1.41G/2.48G [00:51<00:30, 35.1MB/s]
+adapter_model.safetensors:  58%|█████▊    | 1.42G/2.48G [00:52<00:39, 26.8MB/s]
+adapter_model.safetensors:  58%|█████▊    | 1.44G/2.48G [00:52<00:35, 29.3MB/s]
+adapter_model.safetensors:  59%|█████▉    | 1.46G/2.48G [00:53<00:33, 30.4MB/s]
+adapter_model.safetensors:  59%|█████▉    | 1.47G/2.48G [00:53<00:30, 32.9MB/s]
+adapter_model.safetensors:  60%|██████    | 1.49G/2.48G [00:53<00:28, 34.8MB/s]
+adapter_model.safetensors:  61%|██████    | 1.50G/2.48G [00:54<00:27, 35.5MB/s]
+adapter_model.safetensors:  61%|██████▏   | 1.52G/2.48G [00:54<00:26, 36.2MB/s]
+adapter_model.safetensors:  62%|██████▏   | 1.54G/2.48G [00:55<00:25, 36.8MB/s]
+adapter_model.safetensors:  63%|██████▎   | 1.55G/2.48G [00:55<00:25, 36.7MB/s]
+adapter_model.safetensors:  63%|██████▎   | 1.57G/2.48G [00:55<00:24, 37.3MB/s]
+adapter_model.safetensors:  64%|██████▍   | 1.58G/2.48G [00:56<00:23, 38.1MB/s]
+adapter_model.safetensors:  65%|██████▍   | 1.60G/2.48G [00:56<00:22, 39.7MB/s]
+adapter_model.safetensors:  65%|██████▌   | 1.62G/2.48G [00:57<00:22, 38.1MB/s]
+adapter_model.safetensors:  66%|██████▌   | 1.63G/2.48G [00:57<00:21, 39.2MB/s]
+adapter_model.safetensors:  67%|██████▋   | 1.65G/2.48G [00:58<00:21, 38.5MB/s]
+adapter_model.safetensors:  67%|██████▋   | 1.66G/2.48G [00:58<00:24, 33.2MB/s]
+adapter_model.safetensors:  68%|██████▊   | 1.68G/2.48G [00:59<00:23, 33.3MB/s]
+adapter_model.safetensors:  69%|██████▊   | 1.70G/2.48G [00:59<00:22, 35.4MB/s]
+adapter_model.safetensors:  69%|██████▉   | 1.71G/2.48G [01:00<00:28, 26.7MB/s]
+adapter_model.safetensors:  70%|██████▉   | 1.73G/2.48G [01:00<00:25, 29.3MB/s]
+adapter_model.safetensors:  70%|███████   | 1.74G/2.48G [01:01<00:23, 31.3MB/s]
+adapter_model.safetensors:  71%|███████   | 1.76G/2.48G [01:02<00:25, 28.1MB/s]
+adapter_model.safetensors:  72%|███████▏  | 1.78G/2.48G [01:02<00:22, 31.3MB/s]
+adapter_model.safetensors:  72%|███████▏  | 1.79G/2.48G [01:02<00:20, 33.0MB/s]
+adapter_model.safetensors:  73%|███████▎  | 1.81G/2.48G [01:03<00:19, 34.3MB/s]
+adapter_model.safetensors:  74%|███████▎  | 1.82G/2.48G [01:03<00:19, 32.6MB/s]
+adapter_model.safetensors:  74%|███████▍  | 1.84G/2.48G [01:04<00:18, 33.9MB/s]
+adapter_model.safetensors:  75%|███████▍  | 1.86G/2.48G [01:04<00:18, 33.4MB/s]
+adapter_model.safetensors:  76%|███████▌  | 1.87G/2.48G [01:05<00:22, 27.3MB/s]
+adapter_model.safetensors:  76%|███████▋  | 1.89G/2.48G [01:05<00:19, 29.5MB/s]
+adapter_model.safetensors:  77%|███████▋  | 1.90G/2.48G [01:06<00:18, 30.9MB/s]
+adapter_model.safetensors:  78%|███████▊  | 1.92G/2.48G [01:06<00:17, 32.6MB/s]
+adapter_model.safetensors:  78%|███████▊  | 1.94G/2.48G [01:07<00:16, 33.6MB/s]
+adapter_model.safetensors:  79%|███████▉  | 1.95G/2.48G [01:07<00:15, 34.0MB/s]
+adapter_model.safetensors:  79%|███████▉  | 1.97G/2.48G [01:08<00:14, 34.7MB/s]
+adapter_model.safetensors:  80%|████████  | 1.98G/2.48G [01:08<00:13, 35.4MB/s]
+adapter_model.safetensors:  81%|████████  | 2.00G/2.48G [01:09<00:15, 30.7MB/s]
+adapter_model.safetensors:  81%|████████▏ | 2.02G/2.48G [01:11<00:28, 16.1MB/s]
+adapter_model.safetensors:  82%|████████▏ | 2.03G/2.48G [01:11<00:23, 19.3MB/s]
+adapter_model.safetensors:  83%|████████▎ | 2.05G/2.48G [01:12<00:18, 23.2MB/s]
+adapter_model.safetensors:  83%|████████▎ | 2.06G/2.48G [01:13<00:19, 21.2MB/s]
+adapter_model.safetensors:  84%|████████▍ | 2.08G/2.48G [01:13<00:19, 20.6MB/s]
+adapter_model.safetensors:  85%|████████▍ | 2.10G/2.48G [01:14<00:15, 24.0MB/s]
+adapter_model.safetensors:  85%|████████▌ | 2.11G/2.48G [01:14<00:13, 26.8MB/s]
+adapter_model.safetensors:  86%|████████▌ | 2.13G/2.48G [01:15<00:12, 28.8MB/s]
+adapter_model.safetensors:  87%|████████▋ | 2.14G/2.48G [01:15<00:10, 31.3MB/s]
+adapter_model.safetensors:  87%|████████▋ | 2.16G/2.48G [01:16<00:09, 32.4MB/s]
+adapter_model.safetensors:  88%|████████▊ | 2.18G/2.48G [01:16<00:08, 34.2MB/s]
+adapter_model.safetensors:  89%|████████▊ | 2.19G/2.48G [01:17<00:08, 33.0MB/s]
+adapter_model.safetensors:  89%|████████▉ | 2.21G/2.48G [01:17<00:08, 33.2MB/s]
+adapter_model.safetensors:  90%|████████▉ | 2.22G/2.48G [01:18<00:09, 27.0MB/s]
+adapter_model.safetensors:  90%|█████████ | 2.24G/2.48G [01:18<00:07, 29.8MB/s]
+adapter_model.safetensors:  91%|█████████ | 2.26G/2.48G [01:19<00:07, 31.4MB/s]
+adapter_model.safetensors:  92%|█████████▏| 2.27G/2.48G [01:19<00:06, 29.8MB/s]
+adapter_model.safetensors:  92%|█████████▏| 2.29G/2.48G [01:20<00:06, 30.7MB/s]
+adapter_model.safetensors:  93%|█████████▎| 2.30G/2.48G [01:20<00:05, 28.9MB/s]
+adapter_model.safetensors:  94%|█████████▎| 2.32G/2.48G [01:21<00:05, 31.1MB/s]
+adapter_model.safetensors:  94%|█████████▍| 2.34G/2.48G [01:21<00:04, 31.9MB/s]
+adapter_model.safetensors:  95%|█████████▌| 2.35G/2.48G [01:22<00:03, 33.0MB/s]
+adapter_model.safetensors:  96%|█████████▌| 2.37G/2.48G [01:23<00:04, 26.1MB/s]
+adapter_model.safetensors:  96%|█████████▋| 2.38G/2.48G [01:23<00:03, 28.1MB/s]
+adapter_model.safetensors:  97%|█████████▋| 2.40G/2.48G [01:24<00:02, 30.3MB/s]
+adapter_model.safetensors:  98%|█████████▊| 2.42G/2.48G [01:24<00:01, 32.4MB/s]
+adapter_model.safetensors:  98%|█████████▊| 2.43G/2.48G [01:24<00:01, 33.9MB/s]
+adapter_model.safetensors:  99%|█████████▉| 2.45G/2.48G [01:25<00:00, 34.6MB/s]
+adapter_model.safetensors: 100%|█████████▉| 2.46G/2.48G [01:25<00:00, 35.0MB/s]
+adapter_model.safetensors: 100%|██████████| 2.48G/2.48G [01:26<00:00, 28.6MB/s]
+12513.6s	363	
+12513.6s	364	
+12513.6s	365	
+Upload 3 LFS files:  33%|███▎      | 1/3 [01:26<02:53, 86.95s/it][A[A
+Upload 3 LFS files: 100%|██████████| 3/3 [01:26<00:00, 28.98s/it]
+12516.8s	366	No files have been modified since last commit. Skipping to prevent empty commit.
+12517.2s	367	------- _save_model_to_hub() ------------
+12521.4s	368	/usr/local/lib/python3.10/dist-packages/traitlets/traitlets.py:2915: FutureWarning: --Exporter.preprocessors=["nbconvert.preprocessors.ExtractOutputPreprocessor"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.
+12521.4s	369	  warn(
+12521.4s	370	[NbConvertApp] Converting notebook __script__.ipynb to html
+12522.5s	371	[NbConvertApp] Writing 314684 bytes to __results__.html

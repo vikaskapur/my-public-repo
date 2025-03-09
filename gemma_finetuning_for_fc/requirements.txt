@@ -1,0 +1,4 @@
+bitsandbytes==0.45.3 # quantization
+peft==0.14.0 # lora adapters
+trl== 0.15.2 # SFT
+
