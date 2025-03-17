@@ -1,25 +1,20 @@
 # %% [code]
 # %% [code]
 
-from enum import Enum
-from functools import partial
-import pandas as pd
-import torch
-import json
 import os
+from enum import Enum
 
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
-from datasets import load_dataset, DatasetDict
-from trl import SFTConfig, SFTTrainer
+import torch
+from datasets import DatasetDict, load_dataset
 from peft import LoraConfig, TaskType
-
+from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+from trl import SFTConfig, SFTTrainer
 
 seed = 42
 set_seed(seed)
 
 
 class FineTuneForFunctionCalling:
-
     def __init__(self, is_dev_run=False, is_kaggle_run=False):
         """Initialize the FineTuneForFunctionCalling class"""
 
@@ -120,7 +115,6 @@ class FineTuneForFunctionCalling:
 
     # pre-process list of messages, to a prompt that the model can understand.
     def _preprocess(self, sample):
-
         messages = sample["messages"]
         first_message = messages[0]
 
@@ -249,9 +243,7 @@ class FineTuneForFunctionCalling:
 
         print("+++++++ _set_training_arguments() ++++++++++++")
 
-        output_dir = (
-            self.hf_model_id
-        )  # The directory where the trained model checkpoints, logs, and other artifacts will be saved. It will also be the default name of the model when pushed to the hub if not redefined later.
+        output_dir = self.hf_model_id  # The directory where the trained model checkpoints, logs, and other artifacts will be saved. It will also be the default name of the model when pushed to the hub if not redefined later.
         per_device_train_batch_size = 1  # batch size per GPU
         per_device_eval_batch_size = 1  # batch size per GPU/
         gradient_accumulation_steps = 4  # Number of updates steps to accumulate the gradients for, before performing a backward/update pass.
